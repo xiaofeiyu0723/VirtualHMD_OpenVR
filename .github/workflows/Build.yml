@@ -1,0 +1,76 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+env:
+  SOLUTION_FILE_PATH: .
+  BUILD_CONFIGURATION: Release
+  STEAM_PATH: temp
+
+jobs:
+  Win64:
+    runs-on: windows-2022
+    steps:
+
+    - name: Clone repo and submodule
+      run: |
+        git clone --recurse-submodules https://github.com/${{github.repository}}.git .
+
+    - name: Get current date, commit hash and count
+      run: |
+        echo "CurrentDate=$(date +'%Y-%m-%d')" >> $env:GITHUB_ENV
+        echo "CommitHashShort=$(git rev-parse --short=7 HEAD)" >> $env:GITHUB_ENV
+        echo "CommitCount=$(git rev-list --count $env:GITHUB_REF_NAME)" >> $env:GITHUB_ENV
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Restore NuGet packages
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: nuget restore ${{env.SOLUTION_FILE_PATH}}
+
+    - name: Build
+      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
+
+    - name: Install md-to-pdf
+      run: npm install -g md-to-pdf
+
+    - name: Install Ghostscript
+      run: choco install ghostscript --yes
+
+    - name: Convert README.md to PDF
+      run: md-to-pdf README.md
+
+    - name: Convert PDF to JPG
+      run: |
+        magick -density 300 README.pdf README-%d.jpg
+        magick README-*.jpg -append -quality 90 README_combined.jpg
+
+    - name: Compress artifacts
+      uses: vimtor/action-zip@v1.1
+      with:
+        files: output/drivers/ README.md LICENSE
+        dest: "output/${{github.event.repository.name}}.zip"
+
+    - name: Upload zip artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: "VRto3D-${{env.CommitHashShort}}"
+        path: output/${{github.event.repository.name}}.zip
+
+    - name: GitHub pre-release
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{secrets.GITHUB_TOKEN}}"
+        automatic_release_tag: "latest"
+        prerelease: true
+        title: "[${{env.CurrentDate}}] ${{github.event.repository.name}} r${{env.CommitCount}}@${{env.CommitHashShort}}"
+        files: |
+          output/${{github.event.repository.name}}.zip
+          README_combined.jpg
