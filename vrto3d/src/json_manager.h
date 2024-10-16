@@ -41,7 +41,7 @@ struct StereoDisplayDriverConfiguration
     float fov;
     float depth;
     float convergence;
-    bool disable_hotkeys;
+    //bool disable_hotkeys;
 
     bool tab_enable;
     bool reverse_enable;
@@ -52,37 +52,10 @@ struct StereoDisplayDriverConfiguration
     float display_frequency;
     int sleep_count_max;
 
-    bool pitch_enable;
-    bool yaw_enable;
-    bool pitch_set;
-    bool yaw_set;
-    int32_t pose_reset_key;
-    std::string pose_reset_str;
-    bool reset_xinput;
-    bool pose_reset;
-    int32_t ctrl_toggle_key;
-    std::string ctrl_toggle_str;
-    bool ctrl_xinput;
-    int32_t ctrl_type;
-    std::string ctrl_type_str;
-    bool ctrl_held;
-    float pitch_radius;
-    float ctrl_deadzone;
-    float ctrl_sensitivity;
-
-    size_t num_user_settings;
-    std::vector<int32_t> user_load_key;
-    std::vector<std::string> user_load_str;
-    std::vector<int32_t> user_store_key;
-    std::vector<std::string> user_store_str;
-    std::vector<int32_t> user_key_type;
-    std::vector<std::string> user_type_str;
     std::vector<float> user_depth;
     std::vector<float> user_convergence;
     std::vector<float> prev_depth;
     std::vector<float> prev_convergence;
-    std::vector<bool> was_held;
-    std::vector<bool> load_xinput;
     std::vector<int32_t> sleep_count;
 };
 

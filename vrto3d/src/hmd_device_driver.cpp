@@ -334,8 +334,6 @@ vr::EVRInitError MockControllerDeviceDriver::Activate( uint32_t unObjectId )
     }
 
     pose_thread_ = std::thread(&MockControllerDeviceDriver::PoseUpdateThread, this);
-    //hotkey_thread_ = std::thread(&MockControllerDeviceDriver::PollHotkeysThread, this);
-    //focus_thread_ = std::thread(&MockControllerDeviceDriver::FocusUpdateThread, this);
 
     HANDLE thread_handle = pose_thread_.native_handle();
 
@@ -712,7 +710,6 @@ void StereoDisplayComponent::SetHeight()
 void StereoDisplayComponent::SetReset()
 {
     std::unique_lock<std::shared_mutex> lock(cfg_mutex_);
-    config_.pose_reset = false;
 }
 
 
