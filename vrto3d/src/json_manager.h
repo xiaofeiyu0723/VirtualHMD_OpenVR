@@ -21,7 +21,7 @@
 #include <nlohmann/json.hpp>
 
 
-const std::string DEF_CFG = "default_config.json";
+const std::string DEF_CFG = "virtual_hmd_config.json";
 
  // Configuration for VRto3D
 struct StereoDisplayDriverConfiguration

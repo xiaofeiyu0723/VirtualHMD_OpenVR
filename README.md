@@ -5,7 +5,8 @@
 ## Configuration
 
 - VRto3D has to be installed and SteamVR launched once for this config file to show up
-- Modify the `Documents\My Games\vrto3d\default_config.json` for your setup
+- Modify the `Documents\My Games\vrto3d\
+- ` for your setup
 - Most changes made to this configuration require a restart of SteamVR to take effect
 
 | Field Name          | Type    | Description                                                                                 | Default Value  |
