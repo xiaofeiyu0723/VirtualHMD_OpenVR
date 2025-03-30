@@ -18,14 +18,14 @@
 
 #include "hmd_device_driver.h"
 #include "key_mappings.h"
+#include "json_manager.h"
+#include "app_id_mgr.h"
 #include "driverlog.h"
 #include "vrmath.h"
 
 #include <string>
 #include <sstream>
 #include <ctime>
-
-#include <nlohmann/json.hpp>
 
 #include <winsock2.h>
 #pragma comment (lib, "WSock32.Lib")
@@ -441,7 +441,14 @@ void MockControllerDeviceDriver::LoadSettings(const std::string& app_name)
     {
         app_name_ = app_name;
         auto config = stereo_display_component_->GetConfig();
-
+        // Attempt to get Steam App ID
+        AppIdMgr app_id_mgr;
+        auto app_id = app_id_mgr.GetRunningSteamGameAppID();
+        if (!app_id.empty())
+        {
+            std::string vr_str = "steam.app." + app_id;
+            vr::VRSettings()->SetBool(vr_str.c_str(), vr::k_pch_SteamVR_DisableAsyncReprojection_Bool, true);
+        }
         // Attempt to read the JSON settings file
         JsonManager json_manager;
         if (json_manager.LoadProfileFromJson(app_name + "_config.json", config))

@@ -18,6 +18,8 @@
 #ifndef VIRTUAL_KEY_MAPPINGS_H
 #define VIRTUAL_KEY_MAPPINGS_H
 
+#define WIN32_LEAN_AND_MEAN
+
 #include <string>
 #include <unordered_map>
 #include <windows.h>
