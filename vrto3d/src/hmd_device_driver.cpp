@@ -59,6 +59,14 @@ inline vr::HmdQuaternion_t EulerAngleToQuaternion(double Yaw, double Pitch, doub
 
     return q;
 }
+vr::HmdQuaternion_t MultiplyQuaternions(const vr::HmdQuaternion_t& q1, const vr::HmdQuaternion_t& q2) {
+    vr::HmdQuaternion_t result;
+    result.w = q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z;
+    result.x = q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y;
+    result.y = q1.w * q2.y - q1.x * q2.z + q1.y * q2.w + q1.z * q2.x;
+    result.z = q1.w * q2.z + q1.x * q2.y - q1.y * q2.x + q1.z * q2.w;
+    return result;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Signify Operation Success
@@ -111,6 +119,7 @@ MockControllerDeviceDriver::MockControllerDeviceDriver()
 
 //OpenTrack vars
 double Yaw = 0, Pitch = 0, Roll = 0;
+double Yaw_Shifting = 0, Pitch_Shifting = 0, Roll_Shifting = 0;
 double pX = 0, pY = 0, pZ = 0;
 struct TOpenTrack {
     double X;
@@ -119,6 +128,10 @@ struct TOpenTrack {
     double Yaw;
     double Pitch;
     double Roll;
+    double Yaw_Shifting;
+    double Pitch_Shifting;
+    double Roll_Shifting;
+
 };
 TOpenTrack OpenTrack;
 //WinSock
@@ -146,6 +159,9 @@ void WinSockReadFunc()
         bytes_read = recvfrom(socketS, (char*)(&OpenTrack), sizeof(OpenTrack), 0, (sockaddr*)&from, &fromlen);
 
         if (bytes_read > 0) {
+            Yaw_Shifting = DEG_TO_RAD(OpenTrack.Yaw_Shifting);
+            Pitch_Shifting = DEG_TO_RAD(OpenTrack.Pitch_Shifting);
+            Roll_Shifting = DEG_TO_RAD(OpenTrack.Roll_Shifting);
             Yaw = DEG_TO_RAD(OpenTrack.Yaw);
             Pitch = DEG_TO_RAD(OpenTrack.Pitch);
             Roll = DEG_TO_RAD(OpenTrack.Roll);
@@ -400,7 +416,11 @@ void MockControllerDeviceDriver::PoseUpdateThread()
         pose.qDriverFromHeadRotation = HmdQuaternion_Init(1, 0, 0, 0);
 
         //Set head tracking rotation
-        pose.qRotation = EulerAngleToQuaternion(Roll, -Yaw, Pitch);
+        //pose.qRotation = EulerAngleToQuaternion(Roll, -Yaw, Pitch);
+        vr::HmdQuaternion_t initialQuat = EulerAngleToQuaternion(Roll, -Yaw, Pitch);
+        vr::HmdQuaternion_t correctionQuat = EulerAngleToQuaternion(Roll_Shifting, Yaw_Shifting, Pitch_Shifting);
+        vr::HmdQuaternion_t finalQuat = MultiplyQuaternions(correctionQuat, initialQuat);
+        pose.qRotation = finalQuat;
 
         //Set position tracking
         pose.vecPosition[0] = pX * 0.01;
